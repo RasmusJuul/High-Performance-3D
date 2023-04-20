@@ -14,6 +14,7 @@ from typing import Any, Callable, List, Tuple, Type, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from monai.networks.layers.factories import Conv, Norm, Pool
 from monai.networks.layers.utils import get_pool_layer
@@ -330,7 +331,7 @@ class ResNet(LightningModule):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.crossentropyloss(y_hat, y)
+        loss = F.cross_entropy(y_hat.softmax(dim=1), y.argmax(dim=1))
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -345,7 +346,7 @@ class ResNet(LightningModule):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.crossentropyloss(y_hat, y)
+        loss = F.cross_entropy(y_hat.softmax(dim=1), y.argmax(dim=1))
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -358,7 +359,7 @@ class ResNet(LightningModule):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.crossentropyloss(y_hat, y)
+        loss = F.cross_entropy(y_hat.softmax(dim=1), y.argmax(dim=1))
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
