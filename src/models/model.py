@@ -331,7 +331,7 @@ class ResNet(LightningModule):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat.softmax(dim=1), y.argmax(dim=1))
+        loss = F.cross_entropy(y_hat.softmax(dim=1), y)
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -346,7 +346,7 @@ class ResNet(LightningModule):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat.softmax(dim=1), y.argmax(dim=1))
+        loss = F.cross_entropy(y_hat.softmax(dim=1), y)
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -359,7 +359,7 @@ class ResNet(LightningModule):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat.softmax(dim=1), y.argmax(dim=1))
+        loss = F.cross_entropy(y_hat.softmax(dim=1), y)
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
