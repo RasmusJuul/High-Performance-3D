@@ -21,14 +21,17 @@ def main(
     max_epochs: int = 10,
     num_workers: int = 0,
     lr: float = 1e-4,
-    lr_discriminator: float = 1e-4,
     batch_size: int = 32,
     ):
     
     time = str(datetime.datetime.now())[:-10].replace(" ","-").replace(":","")
-
+    
+    torch.set_float32_matmul_precision('medium')
+    
     model = ResNet(block="basic", layers=[2, 2, 2, 2], block_inplanes=[32, 64, 128, 256],
                               num_classes=10, n_input_channels=1)
+    
+    compiled_model = torch.compile(model)
     
     checkpoint_callback = ModelCheckpoint(
         dirpath=_PATH_MODELS + "/" + time,
@@ -56,7 +59,7 @@ def main(
         accelerator="gpu",
         deterministic=True,
         strategy="deepspeed_stage_2",
-        precision=16,
+        precision="bf16-mixed",
         default_root_dir=_PROJECT_ROOT,
         callbacks=[checkpoint_callback,lr_monitor],
         # callbacks=[checkpoint_callback, early_stopping_callback, lr_monitor],
@@ -64,7 +67,7 @@ def main(
         logger=wandb_logger,
     )
 
-    trainer.fit(model, datamodule=bugnist)
+    trainer.fit(compiled_model, datamodule=bugnist)
 
 
 if __name__ == "__main__":
