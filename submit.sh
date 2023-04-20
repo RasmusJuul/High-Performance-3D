@@ -4,8 +4,8 @@
 #BSUB -n 16
 #BSUB -R "span[hosts=1]"
 #BSUB -gpu "num=1:mode=exclusive_process"
-#BSUB -W 02:00
-#BSUB -R "rusage[mem=8GB]"
+#BSUB -W 06:00
+#BSUB -R "rusage[mem=16GB]"
 ##BSUB -R "select[gpu40gb]" #options gpu40gb or gpu80gb
 #BSUB -o outputs/gpu_%J.out
 #BSUB -e outputs/gpu_%J.err
@@ -13,7 +13,7 @@
 
 nvidia-smi
 
-source aml/bin/activate
+source ../envs/3d/bin/activate
 
 # Options
 # Run main.py --help to get options
