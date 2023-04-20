@@ -329,9 +329,8 @@ class ResNet(LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         x, y = batch
-        # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat.softmax(dim=1), y)
+        loss = F.cross_entropy(y_hat, y)
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -344,9 +343,8 @@ class ResNet(LightningModule):
     
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat.softmax(dim=1), y)
+        loss = F.cross_entropy(y_hat, y)
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -357,9 +355,8 @@ class ResNet(LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        # x = x.view(x.size(0), -1)
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat.softmax(dim=1), y)
+        loss = F.cross_entropy(y_hat, y)
         
         acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
         
@@ -372,16 +369,3 @@ class ResNet(LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         return optimizer
-    
-    
-    
-def resnet18(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    """ResNet-18 with optional pretrained support when `spatial_dims` is 3.
-
-    Pretraining from `Med3D: Transfer Learning for 3D Medical Image Analysis <https://arxiv.org/pdf/1904.00625.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on 23 medical datasets
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet("resnet18", ResNetBlock, [2, 2, 2, 2], get_inplanes(), pretrained, progress, **kwargs)
