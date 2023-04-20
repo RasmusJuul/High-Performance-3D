@@ -107,10 +107,10 @@ class BugNIST(torch.utils.data.Dataset):
         #     X = X.expand([3, size[1], size[2], size[3]])
 
         y = label.value
-        one_hot_encoded = torch.zeros(self.num_classes())
-        one_hot_encoded[y] = 1
+        #one_hot_encoded = torch.zeros(self.num_classes())
+        #one_hot_encoded[y] = 1
 
-        return X, one_hot_encoded
+        return X, y
 
     @staticmethod
     def num_classes() -> int:
