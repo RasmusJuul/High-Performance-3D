@@ -338,7 +338,7 @@ class ResNet(LightningModule):
         self.log_dict({
             'train/loss': loss,
             'train/acc': acc
-        })
+        },sync_dist=True)
         
         return loss
     
@@ -353,7 +353,7 @@ class ResNet(LightningModule):
         self.log_dict({
             'val/loss': loss,
             'val/acc': acc
-        })
+        },sync_dist=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -366,7 +366,7 @@ class ResNet(LightningModule):
         self.log_dict({
             'test/loss': loss,
             'test/acc': acc
-        })
+        },sync_dist=True)
     
 
     def configure_optimizers(self):
