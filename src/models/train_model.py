@@ -57,7 +57,7 @@ def main(
         max_epochs=max_epochs,
         devices=1,
         accelerator="gpu",
-        deterministic=True,
+        deterministic=False,
         strategy="deepspeed_stage_2",
         precision="bf16-mixed",
         default_root_dir=_PROJECT_ROOT,
