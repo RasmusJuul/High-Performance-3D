@@ -31,7 +31,6 @@ def main(
     model = ResNet(block="basic", layers=[2, 2, 2, 2], block_inplanes=[32, 64, 128, 256],
                               num_classes=10, n_input_channels=1)
     
-    compiled_model = torch.compile(model)
     
     checkpoint_callback = ModelCheckpoint(
         dirpath=_PATH_MODELS + "/" + time,
@@ -67,7 +66,7 @@ def main(
         logger=wandb_logger,
     )
 
-    trainer.fit(compiled_model, datamodule=bugnist)
+    trainer.fit(model, datamodule=bugnist)
 
 
 if __name__ == "__main__":
