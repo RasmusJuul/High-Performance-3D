@@ -1,6 +1,6 @@
 #!/bin/sh
 #BSUB -q gpua100
-#BSUB -J baseline
+#BSUB -J deepspeed
 #BSUB -n 16
 #BSUB -R "span[hosts=1]"
 #BSUB -gpu "num=1:mode=exclusive_process"
@@ -21,4 +21,4 @@ source ../envs/3d/bin/activate
 # Run main.py --help to get options
 
 
-CUDA_LAUNCH_BLOCKING=1 python3 main.py --name resnet18_baseline --batch_size 24 --max-epochs 100 --num-workers 16 >| outputs/baseline.out 2>| error/baseline.err
+CUDA_LAUNCH_BLOCKING=1 python3 main.py --name resnet18_fast --batch_size 24 --max-epochs 100 --num-workers 16 --fast >| outputs/fast.out 2>| error/fast.err

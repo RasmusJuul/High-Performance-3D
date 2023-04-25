@@ -22,6 +22,8 @@ from monai.utils import ensure_tuple_rep
 from monai.utils.module import look_up_option
 
 from pytorch_lightning import LightningModule
+import deepspeed
+import torchmetrics
 
 __all__ = [
     "ResNet",
@@ -193,9 +195,11 @@ class ResNet(LightningModule):
         no_max_pool: bool = False,
         shortcut_type: str = "B",
         widen_factor: float = 1.0,
-        num_classes: int = 400,
+        num_classes: int = 12,
         feed_forward: bool = True,
         bias_downsample: bool = True,  # for backwards compatibility (also see PR #5477)
+        lr: float = 1e-3,
+        fast: bool = False,
     ) -> None:
 
         super().__init__()
@@ -253,6 +257,14 @@ class ResNet(LightningModule):
                 nn.init.constant_(torch.as_tensor(m.bias), 0)
                 
         self.save_hyperparameters()
+        
+        self.lr = lr
+        self.fast = fast
+        
+        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        
 
     def _downsample_basic_block(self, x: torch.Tensor, planes: int, stride: int, spatial_dims: int = 3) -> torch.Tensor:
         out: torch.Tensor = get_pool_layer(("avg", {"kernel_size": 1, "stride": stride}), spatial_dims=spatial_dims)(x)
@@ -329,43 +341,54 @@ class ResNet(LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         x, y = batch
-        y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        preds = self.forward(x)
+        loss = F.cross_entropy(preds, y)
         
-        acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
+        self.train_acc(preds, y)
         
         self.log_dict({
             'train/loss': loss,
-            'train/acc': acc
-        },sync_dist=True)
-        
+            'train/acc': self.train_acc
+        },
+            on_step=True,
+            on_epoch=False,
+        )
+    
         return loss
     
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        preds = self.forward(x)
+        loss = F.cross_entropy(preds, y)
         
-        acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
+        self.valid_acc(preds, y)
         
         self.log_dict({
             'val/loss': loss,
-            'val/acc': acc
-        },sync_dist=True)
+            'val/acc': self.valid_acc
+        },
+            on_step=False,
+            on_epoch=True,
+        )
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        preds = self.forward(x)
+        loss = F.cross_entropy(preds, y)
         
-        acc = sum(y_hat.softmax(dim=1).argmax(dim=1) == y)/y.shape[0]
-        
+        self.test_acc(preds, y)
         self.log_dict({
             'test/loss': loss,
-            'test/acc': acc
-        },sync_dist=True)
-    
+            'test/acc': self.test_acc
+        },
+            on_step=False,
+            on_epoch=True,
+        )
+        
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        if self.fast:
+            optimizer = deepspeed.ops.adam.DeepSpeedCPUAdam(self.parameters(), lr=self.lr)
+        else:
+            optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
