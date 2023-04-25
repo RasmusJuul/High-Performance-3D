@@ -33,8 +33,8 @@ def main(
     
     model = ResNet(block="basic", layers=[2, 2, 2, 2], block_inplanes=[32, 64, 128, 256],
                               num_classes=12, n_input_channels=1, fast=fast, lr=lr)
-    if fast:
-        model = torch.compile(model)
+#     if fast:
+#         model = torch.compile(model)
     
     checkpoint_callback = ModelCheckpoint(
         dirpath=_PATH_MODELS + "/" + time,
