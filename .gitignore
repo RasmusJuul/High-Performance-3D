@@ -133,3 +133,4 @@ wandb/
 error/
 outputs/
 models/
+notebooks/testing.ipynb
