@@ -14,8 +14,9 @@ def main(
     lr: float,
     fast: bool,
     batch_size: int,
-    num_devices: int,
     compiled: bool,
+    deepspeed: bool,
+    offload: bool,
 ):
     torch.cuda.empty_cache()
 
@@ -26,8 +27,9 @@ def main(
         lr=lr,
         fast=fast,
         batch_size=batch_size,
-        num_devices=num_devices,
         compiled=compiled,
+        deepspeed=deepspeed,
+        offload=offload,
     )
 
 
@@ -69,12 +71,6 @@ if __name__ == "__main__":
         default=8,
     )
     parser.add_argument(
-        "--num_devices",
-        type=int,
-        help="Batch size",
-        default=-1,
-    )
-    parser.add_argument(
         "-f",
         "--fast",
         action='store_true',
@@ -86,6 +82,17 @@ if __name__ == "__main__":
         action='store_true',
         help="compiles model"
     )
+    parser.add_argument(
+        "-d",
+        "--deepspeed",
+        action='store_true',
+        help="whether to use deepspeed or not"
+    )
+    parser.add_argument(
+        "--offload",
+        action='store_true',
+        help="whether to use offloading in deepspeed or not"
+    )
     args = parser.parse_args()
 
     main(
@@ -95,6 +102,7 @@ if __name__ == "__main__":
         lr=args.lr,
         fast=args.fast,
         batch_size=args.batch_size,
-        num_devices=args.num_devices,
         compiled=args.compiled,
+        deepspeed=args.deepspeed,
+        offload=args.offload,
     )

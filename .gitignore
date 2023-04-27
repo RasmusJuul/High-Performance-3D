@@ -132,3 +132,4 @@ data/raw/
 wandb/
 error/
 outputs/
+models/

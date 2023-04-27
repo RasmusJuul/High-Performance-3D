@@ -199,7 +199,7 @@ class ResNet(LightningModule):
         feed_forward: bool = True,
         bias_downsample: bool = True,  # for backwards compatibility (also see PR #5477)
         lr: float = 1e-3,
-        fast: bool = False,
+        offload: bool = False,
     ) -> None:
 
         super().__init__()
@@ -259,7 +259,7 @@ class ResNet(LightningModule):
         self.save_hyperparameters()
         
         self.lr = lr
-        self.fast = fast
+        self.offload = offload
         
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
         self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
@@ -389,9 +389,10 @@ class ResNet(LightningModule):
         
 
     def configure_optimizers(self):
-        if self.fast:
+        if self.offload:
             optimizer = deepspeed.ops.adam.DeepSpeedCPUAdam(self.parameters(), lr=self.lr)
         else:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+            optimizer = deepspeed.runtime.fp16.onebit.zoadam.ZeroOneAdam(self.parameters(), lr=self.lr)
+            # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
