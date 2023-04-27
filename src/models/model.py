@@ -23,6 +23,7 @@ from monai.utils.module import look_up_option
 
 from pytorch_lightning import LightningModule
 import deepspeed
+from src.models.optimizers import ZeroOneAdam
 import torchmetrics
 
 __all__ = [
@@ -392,7 +393,7 @@ class ResNet(LightningModule):
         if self.offload:
             optimizer = deepspeed.ops.adam.DeepSpeedCPUAdam(self.parameters(), lr=self.lr)
         else:
-            optimizer = deepspeed.runtime.fp16.onebit.zoadam.ZeroOneAdam(self.parameters(), lr=self.lr)
+            optimizer = ZeroOneAdam(self.parameters(), lr=self.lr)
             # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
