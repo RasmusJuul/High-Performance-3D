@@ -2,6 +2,7 @@ import logging
 import datetime
 
 import torch
+import torch._dynamo
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import (
     EarlyStopping,
@@ -24,8 +25,10 @@ def main(
     lr: float = 1e-4,
     fast: bool = False,
     batch_size: int = 16,
+    num_devices: int = -1,
+    compiled: bool = False,
     ):
-    
+    torch._dynamo.config.suppress_errors = True
     time = str(datetime.datetime.now())[:-10].replace(" ","-").replace(":","")
     
     if fast:
@@ -33,8 +36,8 @@ def main(
     
     model = ResNet(block="basic", layers=[2, 2, 2, 2], block_inplanes=[32, 64, 128, 256],
                               num_classes=12, n_input_channels=1, fast=fast, lr=lr)
-#     if fast:
-#         model = torch.compile(model)
+    if compiled:
+        model = torch.compile(model)
     
     checkpoint_callback = ModelCheckpoint(
         dirpath=_PATH_MODELS + "/" + time,
@@ -45,7 +48,7 @@ def main(
         auto_insert_metric_name=True,
     )
     early_stopping_callback = EarlyStopping(
-        monitor="val/acc", patience=5, verbose=True, mode="max", strict=False, check_on_train_epoch_end=False,
+        monitor="val/acc", patience=10, verbose=True, mode="max", strict=False, check_on_train_epoch_end=False,
     )
 
     bugnist = BugNISTDataModule(batch_size=batch_size, num_workers=num_workers,transforms=True)
@@ -58,11 +61,11 @@ def main(
     
     if fast:
         early_stopping_callback = EarlyStopping(
-            monitor="val/acc", patience=5, verbose=True, mode="max", strict=False, stopping_threshold=0.9, check_on_train_epoch_end=False,
+            monitor="val/acc", patience=100, verbose=True, mode="max", strict=False, stopping_threshold=0.9, check_on_train_epoch_end=False,
         )
         trainer = Trainer(
             max_epochs=max_epochs,
-            devices=1,
+            devices=num_devices,
             accelerator="gpu",
             deterministic=False,
             strategy=DeepSpeedStrategy(offload_optimizer=True, allgather_bucket_size=5e8, reduce_bucket_size=5e8,logging_batch_size_per_gpu=batch_size),

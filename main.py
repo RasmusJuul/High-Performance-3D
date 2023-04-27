@@ -14,6 +14,8 @@ def main(
     lr: float,
     fast: bool,
     batch_size: int,
+    num_devices: int,
+    compiled: bool,
 ):
     torch.cuda.empty_cache()
 
@@ -24,6 +26,8 @@ def main(
         lr=lr,
         fast=fast,
         batch_size=batch_size,
+        num_devices=num_devices,
+        compiled=compiled,
     )
 
 
@@ -65,10 +69,22 @@ if __name__ == "__main__":
         default=8,
     )
     parser.add_argument(
+        "--num_devices",
+        type=int,
+        help="Batch size",
+        default=-1,
+    )
+    parser.add_argument(
         "-f",
         "--fast",
         action='store_true',
         help="enable all speed increasing methods"
+    )
+    parser.add_argument(
+        "-c",
+        "--compiled",
+        action='store_true',
+        help="compiles model"
     )
     args = parser.parse_args()
 
@@ -79,4 +95,6 @@ if __name__ == "__main__":
         lr=args.lr,
         fast=args.fast,
         batch_size=args.batch_size,
+        num_devices=args.num_devices,
+        compiled=args.compiled,
     )

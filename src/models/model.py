@@ -352,6 +352,7 @@ class ResNet(LightningModule):
         },
             on_step=True,
             on_epoch=False,
+            sync_dist=True,
         )
     
         return loss
@@ -369,6 +370,7 @@ class ResNet(LightningModule):
         },
             on_step=False,
             on_epoch=True,
+            sync_dist=True,
         )
 
     def test_step(self, batch, batch_idx):
@@ -391,4 +393,5 @@ class ResNet(LightningModule):
             optimizer = deepspeed.ops.adam.DeepSpeedCPUAdam(self.parameters(), lr=self.lr)
         else:
             optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
