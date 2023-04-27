@@ -30,6 +30,8 @@ def main(
     offload: bool = False,
     ):
     
+    seed_everything(1234, workers=True)
+    
     time = str(datetime.datetime.now())[:-10].replace(" ","-").replace(":","")
     
     torch.set_float32_matmul_precision('medium')
@@ -52,7 +54,7 @@ def main(
     bugnist = BugNISTDataModule(batch_size=batch_size, num_workers=num_workers,transforms=True)
 
     wandb_logger = WandbLogger(project="high-performance-3d", name=name)
-    seed_everything(1234, workers=True)
+    
     
     if fast:
         early_stopping_callback = EarlyStopping(
