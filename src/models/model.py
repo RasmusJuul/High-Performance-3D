@@ -393,7 +393,7 @@ class ResNet(LightningModule):
         if self.offload:
             optimizer = deepspeed.ops.adam.DeepSpeedCPUAdam(self.parameters(), lr=self.lr)
         else:
-            optimizer = ZeroOneAdam(self.parameters(), lr=self.lr)
+            optimizer = deepspeed.ops.adam.FusedAdam(self.parameters(), lr=self.lr)
             # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         # optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
